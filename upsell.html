@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Upsell - Barriga Negativa</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --red: #d90f1f;
+      --red-dark: #a50714;
+      --black: #0c0c0d;
+      --white: #ffffff;
+      --yellow: #ffd54a;
+      --yellow-strong: #ffbf00;
+      --green: #18c964;
+      --green-dark: #0f9d4b;
+      --gray-bg: #f5f5f7;
+      --text: #171717;
+      --muted: #646464;
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.12);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+
+      --expire-pulse-duration: 2.6s;
+      --expire-pulse-min-opacity: 0.90;
+      --expire-pulse-scale: 1.01;
+      --expire-pulse-shadow: 0 4px 14px rgba(0,0,0,0.16);
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--gray-bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+      height: auto;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 860px;
+      background: #fff;
+      min-height: 100vh;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
+    }
+
+    .expire-bar {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      width: 100%;
+      max-width: 860px;
+      background: linear-gradient(180deg, #d91422 0%, #b70c18 100%);
+      color: #fff;
+      text-align: center;
+      padding: 16px 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      font-size: 22px;
+      box-shadow: var(--expire-pulse-shadow);
+      will-change: opacity, transform, box-shadow;
+      animation: urgencyPulse var(--expire-pulse-duration) ease-in-out infinite;
+      transform-origin: center center;
+    }
+
+    @keyframes urgencyPulse {
+      0% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+        box-shadow: var(--expire-pulse-shadow);
+      }
+      50% {
+        opacity: var(--expire-pulse-min-opacity);
+        transform: translateX(-50%) scale(var(--expire-pulse-scale));
+        box-shadow: 0 8px 22px rgba(217, 15, 31, 0.28);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+        box-shadow: var(--expire-pulse-shadow);
+      }
+    }
+
+    .top-space {
+      height: 96px;
+      background: #fff;
+    }
+
+    .divider {
+      width: min(calc(100% - 36px), 760px);
+      height: 4px;
+      background: var(--red);
+      margin: 0 auto 24px;
+      border-radius: 999px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 18px 40px;
+    }
+
+    .step-bar {
+      background: #0f0f10;
+      color: #ffd54a;
+      text-align: center;
+      font-weight: 900;
+      padding: 18px 16px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      line-height: 1.35;
+      margin-bottom: 18px;
+      font-size: 20px;
+    }
+
+    .hero-alert {
+      background: linear-gradient(180deg, #ff1b32 0%, #d90f1f 100%);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 26px 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .hero-alert .icon {
+      font-size: 42px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .hero-alert h1 {
+      font-size: 39px;
+      line-height: 1.18;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .hero-alert p {
+      font-size: 24px;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+
+    .lead-text {
+      font-size: 23px;
+      line-height: 1.6;
+      color: #2b2b2b;
+      margin-bottom: 18px;
+    }
+
+    .highlight-yellow {
+      background: linear-gradient(transparent 58%, #ffe66a 58%);
+      font-weight: 900;
+    }
+
+    .confirm-box {
+      background: #fafafa;
+      border-left: 4px solid var(--green);
+      color: #5b5b5b;
+      padding: 16px 18px;
+      font-size: 18px;
+      line-height: 1.6;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: var(--radius-xl);
+      padding: 30px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid #f0f0f0;
+      margin-bottom: 22px;
+    }
+
+    .card-outline-yellow {
+      border: 3px solid #f0d469;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.09);
+    }
+
+    .card-dark {
+      background: #0c0c0d;
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 30px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .icon-top {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 38px;
+      line-height: 1.18;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      font-size: 23px;
+      line-height: 1.55;
+      color: #2d2d2d;
+    }
+
+    .card-dark .section-subtitle {
+      color: #e8e8e8;
+    }
+
+    .mini-divider {
+      width: 110px;
+      height: 4px;
+      background: #efc24d;
+      border-radius: 999px;
+      margin: 20px auto;
+    }
+
+    .notice-box {
+      background: #fff;
+      border-left: 5px solid var(--red);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 20px 18px;
+      margin-bottom: 22px;
+      font-size: 23px;
+      line-height: 1.6;
+      color: #2b2b2b;
+    }
+
+    .list-title-red {
+      color: #d30f20;
+      font-size: 31px;
+      line-height: 1.25;
+      font-weight: 900;
+      margin-bottom: 18px;
+    }
+
+    .benefit-list,
+    .pain-list,
+    .short-list {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+
+    .benefit-list li,
+    .pain-list li,
+    .short-list li {
+      font-size: 23px;
+      line-height: 1.5;
+      padding: 0 0 14px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .card-dark .pain-list li {
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+
+    .benefit-list li:last-child,
+    .pain-list li:last-child,
+    .short-list li:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .benefit-list strong,
+    .pain-list strong,
+    .short-list strong {
+      font-weight: 900;
+    }
+
+    .red-box {
+      background: linear-gradient(180deg, #ff2240 0%, #d71021 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 22px 18px;
+      text-align: center;
+      font-size: 27px;
+      line-height: 1.4;
+      font-weight: 900;
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+
+    .yellow-box {
+      background: #ffdb2f;
+      color: #111;
+      border-radius: 16px;
+      padding: 20px 18px;
+      text-align: center;
+      font-size: 26px;
+      line-height: 1.4;
+      font-weight: 900;
+      margin-top: 12px;
+    }
+
+    .dark-headline {
+      font-size: 37px;
+      line-height: 1.2;
+      font-weight: 900;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .dark-copy {
+      font-size: 23px;
+      line-height: 1.65;
+      color: #f0f0f0;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .dark-copy .yellow {
+      color: #ffd24b;
+      font-weight: 900;
+    }
+
+    .dark-copy .green {
+      color: #27df75;
+      font-weight: 900;
+    }
+
+    .pain-grid {
+      background: #141415;
+      border: 2px solid rgba(255, 40, 70, 0.55);
+      border-radius: 18px;
+      padding: 20px 18px;
+      margin-top: 20px;
+    }
+
+    .pain-grid h3 {
+      color: #ffd54a;
+      font-size: 30px;
+      line-height: 1.25;
+      font-weight: 900;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .pain-list li {
+      color: #fff;
+    }
+
+    .offer-card {
+      background: linear-gradient(180deg, #1ad669 0%, #0eba57 100%);
+      color: #fff;
+      border-radius: 26px;
+      padding: 28px 22px 24px;
+      box-shadow: 0 18px 36px rgba(16, 150, 74, 0.28);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .offer-title {
+      font-size: 41px;
+      line-height: 1.15;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .offer-box {
+      background: rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 24px 16px;
+      margin: 14px 0 18px;
+    }
+
+    .normal-price {
+      font-size: 25px;
+      line-height: 1.3;
+      font-weight: 800;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+
+    .normal-price s {
+      opacity: 0.8;
+    }
+
+    .today-price {
+      font-size: 64px;
+      line-height: 1;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .offer-expire {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .cta-button {
+      display: block;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #ffcc24 0%, #ffb400 100%);
+      color: #111;
+      text-align: center;
+      font-size: 31px;
+      line-height: 1.25;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 24px 16px;
+      border-radius: 18px;
+      box-shadow: 0 14px 28px rgba(255, 180, 0, 0.32);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .cta-meta {
+      text-align: center;
+      color: #f0fff4;
+      font-size: 18px;
+      line-height: 1.5;
+      margin-top: 14px;
+      font-weight: 700;
+    }
+
+    .icon-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .icon-info {
+      text-align: center;
+      font-size: 17px;
+      line-height: 1.35;
+      color: #404040;
+      font-weight: 700;
+    }
+
+    .icon-info span {
+      display: block;
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .decline-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 18px;
+      color: #666;
+      text-decoration: underline;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 12px 18px 34px;
+      color: #6a6a6a;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .red {
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .green {
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .yellow {
+      color: var(--yellow-strong);
+      font-weight: 900;
+    }
+
+    .bold {
+      font-weight: 900;
+    }
+
+    @media (max-width: 768px) {
+      .expire-bar {
+        font-size: 17px;
+        padding: 14px 10px;
+      }
+
+      .top-space {
+        height: 84px;
+      }
+
+      .divider {
+        width: calc(100% - 24px);
+        margin-bottom: 18px;
+      }
+
+      .container {
+        padding: 0 12px 28px;
+      }
+
+      .step-bar {
+        font-size: 16px;
+        padding: 14px 12px;
+      }
+
+      .hero-alert {
+        padding: 22px 14px;
+      }
+
+      .hero-alert h1,
+      .section-title,
+      .dark-headline,
+      .offer-title {
+        font-size: 30px;
+      }
+
+      .hero-alert p,
+      .section-subtitle,
+      .lead-text,
+      .notice-box,
+      .dark-copy,
+      .benefit-list li,
+      .pain-list li,
+      .short-list li {
+        font-size: 19px;
+      }
+
+      .card,
+      .card-dark {
+        padding: 24px 16px;
+      }
+
+      .list-title-red,
+      .today-price {
+        font-size: 26px;
+      }
+
+      .red-box,
+      .yellow-box {
+        font-size: 22px;
+      }
+
+      .cta-button {
+        font-size: 24px;
+        padding: 20px 14px;
+      }
+
+      .cta-meta {
+        font-size: 15px;
+      }
+
+      .icon-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .icon-info {
+        font-size: 14px;
+      }
+
+      .icon-info span {
+        font-size: 28px;
+      }
+
+      .offer-box {
+        padding: 18px 12px;
+      }
+
+      .normal-price {
+        font-size: 20px;
+      }
+
+      .offer-expire {
+        font-size: 17px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .hero-alert h1,
+      .section-title,
+      .dark-headline,
+      .offer-title {
+        font-size: 25px;
+      }
+
+      .hero-alert p,
+      .section-subtitle,
+      .lead-text,
+      .notice-box,
+      .dark-copy,
+      .benefit-list li,
+      .pain-list li,
+      .short-list li {
+        font-size: 17px;
+      }
+
+      .list-title-red {
+        font-size: 23px;
+      }
+
+      .red-box,
+      .yellow-box {
+        font-size: 19px;
+      }
+
+      .today-price {
+        font-size: 50px;
+      }
+
+      .cta-button {
+        font-size: 21px;
+      }
+
+      .top-space {
+        height: 78px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="expire-bar" id="expireBar" data-section="sticky_timer" data-label="Barra fixa do contador">
+      ⏰ ESTA PÁGINA EXPIRA EM: <span id="topTimer">10:00</span>
+    </div>
+
+    <div class="top-space"></div>
+    <div class="divider"></div>
+
+    <div class="container">
+      <section class="step-bar" data-section="step_bar" data-label="Barra de passo">
+        ⚠️ PASSO 1 de 2: NÃO FECHE NEM ATUALIZE ESTA PÁGINA...
+      </section>
+
+      <section class="hero-alert" data-section="hero_section" data-label="Headline principal">
+        <span class="icon">🚨</span>
+        <h1>ATENÇÃO: SUA COMPRA DO TAI CHI NA CADEIRA AINDA NÃO ESTÁ COMPLETA...</h1>
+        <p>
+          Seu pedido principal já está garantido.
+          <br /><br />
+          Mas existe um <span class="bold">protocolo complementar</span> que pode ser a diferença entre
+          começar vendo sua barriga responder mais rápido...
+          <br />
+          ou seguir por semanas sentindo que justamente a parte mais difícil do corpo continua travada.
+        </p>
+      </section>
+
+      <section data-section="intro_section" data-label="Introdução e contexto">
+        <p class="lead-text">
+          <span class="highlight-yellow">O Tai Chi na Cadeira já vai começar a reorganizar seu corpo.</span>
+          Ele ajuda na mobilidade, na disposição e no destravamento do organismo.
+          <br /><br />
+          Mas quando falamos de <strong>barriga grande, estufada e difícil de diminuir</strong>, muitos homens precisam de um apoio extra logo no início para perceber mais resultado e não perder o embalo.
+        </p>
+
+        <div class="confirm-box">
+          ✅ Seu pedido está <strong>confirmado e seguro</strong>. Esta página existe apenas para liberar agora, antes da confirmação final, o complemento que ajuda a <strong>potencializar a resposta da barriga</strong>, reduzir sensação de peso e aumentar sua percepção de avanço nos primeiros dias.
+        </div>
+      </section>
+
+      <section class="card card-outline-yellow center" data-section="problem_section" data-label="Dor principal da barriga">
+        <span class="icon-top">⚠️</span>
+        <h2 class="section-title">A verdade é simples: a barriga costuma ser a parte mais difícil de mudar</h2>
+        <div class="mini-divider"></div>
+        <p class="section-subtitle">
+          E é justamente nessa parte que muitos homens desanimam.
+          <br /><br />
+          Eles até começam bem...
+          <br />
+          mas como não veem a barriga responder logo, acham que o corpo está “lento demais”.
+        </p>
+      </section>
+
+      <section class="notice-box" data-section="risk_section" data-label="Risco de sair sem a oferta">
+        Sair desta página agora pode fazer você perder a única oportunidade de adicionar ao seu plano
+        o <strong>protocolo secreto focado na parte mais difícil do corpo masculino</strong>:
+        a região abdominal.
+      </section>
+
+      <section class="card" data-section="benefits_section" data-label="Benefícios principais">
+        <h3 class="list-title-red">🔥 O que esse protocolo ajuda a acelerar:</h3>
+        <ul class="benefit-list">
+          <li><strong>Menos inchaço e sensação de barriga pesada</strong></li>
+          <li><strong>Mais chance de perceber sua barriga responder antes</strong></li>
+          <li><strong>Mais leveza e disposição</strong> para seguir o método com constância</li>
+          <li><strong>Menos pressão nas costas e na lombar</strong> causada pelo excesso abdominal</li>
+          <li><strong>Mais motivação</strong> por sentir que o plano está mais completo</li>
+        </ul>
+
+        <div class="red-box">
+          Você quer começar o Tai Chi na Cadeira e esperar semanas até notar a barriga reagir...
+          <br /><br />
+          ou prefere entrar já com um acelerador focado justamente no ponto que mais incomoda?
+        </div>
+
+        <div class="yellow-box">
+          A maioria dos homens não precisa de mais esforço.
+          <br />
+          Precisa do <strong>estímulo certo</strong> na região certa.
+        </div>
+      </section>
+
+      <section class="offer-card" id="offerCard" data-section="offer_section" data-label="Oferta principal">
+        <div class="offer-title">BARRIGA NEGATIVA</div>
+        <div style="font-size: 24px; font-weight: 800; line-height: 1.45;">
+          O <strong>protocolo complementar do Tai Chi</strong> criado para acelerar os resultados justamente na barriga,
+          aliviar a sensação de peso e ajudar seu corpo a responder mais rápido.
+        </div>
+
+        <div class="offer-box" id="priceBox" data-section="price_section" data-label="Bloco de preço">
+          <div class="normal-price">Preço normal: <s>R$ 197,00</s></div>
+          <div style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">Somente nesta página:</div>
+          <div class="today-price">R$ 19,90</div>
+          <div class="offer-expire">⏰ Oferta expira em: <span id="offerTimer">10:00</span></div>
+        </div>
+
+        <a
+          href="https://pay.cakto.com.br/8ymd62t_848391"
+          class="cta-button"
+          id="mainCta"
+          data-cta-id="upsell_main_cta"
+          data-cta-label="Adicionar barriga negativa"
+        >
+          SIM, QUERO ADICIONAR O BARRIGA NEGATIVA AO MEU PLANO →
+        </a>
+
+        <div class="cta-meta">
+          🔒 Pagamento 100% seguro &nbsp;|&nbsp; ✅ Garantia de 30 dias &nbsp;|&nbsp; 📲 Acesso imediato
+        </div>
+      </section>
+
+      <section class="card-dark" data-section="objection_section" data-label="Quebra de objeção">
+        <h2 class="dark-headline">“Mas o Tai Chi na Cadeira sozinho já não resolve?”</h2>
+        <div class="mini-divider"></div>
+        <p class="dark-copy">
+          O Tai Chi na Cadeira é o <span class="yellow">método principal</span> da sua transformação.
+          <br /><br />
+          Só que o <span class="green">Barriga Negativa</span> entra como o complemento estratégico
+          para dar apoio justamente na região que costuma responder mais devagar.
+          <br /><br />
+          É isso que deixa sua estratégia mais forte, mais completa e mais inteligente desde o começo.
+        </p>
+
+        <div class="pain-grid">
+          <h3>Por que vale levar agora:</h3>
+          <ul class="pain-list">
+            <li><strong>1.</strong> Você já começa com o plano completo</li>
+            <li><strong>2.</strong> Dá suporte extra na parte mais difícil: a barriga</li>
+            <li><strong>3.</strong> Aumenta sua percepção de resultado e motivação</li>
+            <li><strong>4.</strong> Evita aquela sensação de estar fazendo “só metade” da estratégia</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card center" data-section="final_push_section" data-label="Empurrão final">
+        <span class="icon-top">✅</span>
+        <h2 class="section-title">Você já deu o primeiro passo. Agora complete sua estratégia.</h2>
+        <div class="mini-divider"></div>
+        <p class="section-subtitle">
+          Essa condição não aparece de novo depois que você sair desta página.
+          <br /><br />
+          Se você quer dar ao seu corpo a melhor chance de ver a barriga responder mais cedo,
+          o momento é agora.
+        </p>
+      </section>
+
+      <div class="icon-row" data-section="trust_icons" data-label="Ícones de confiança">
+        <div class="icon-info">
+          <span>🔒</span>
+          Pagamento seguro
+        </div>
+        <div class="icon-info">
+          <span>✅</span>
+          Garantia
+        </div>
+        <div class="icon-info">
+          <span>⚡</span>
+          Acesso imediato
+        </div>
+        <div class="icon-info">
+          <span>🔥</span>
+          Oferta única
+        </div>
+      </div>
+
+      <a
+        href="pagina-obrigado.html"
+        class="decline-link"
+        id="declineLink"
+        data-cta-id="upsell_decline"
+        data-cta-label="Recusar upsell"
+      >
+        Não, quero continuar apenas com o Tai Chi na Cadeira
+      </a>
+    </div>
+
+    <footer class="footer" data-section="footer_section" data-label="Rodapé">
+      <p><strong>Aviso:</strong> o Barriga Negativa é um complemento digital de apoio ao seu plano principal.</p>
+      <p>Copyright 2026 © Todos os direitos reservados.</p>
+      <p>Política de Privacidade • Termos de Uso • Aviso Legal</p>
+    </footer>
+  </main>
+
+  <script>
+    const COUNTDOWN_MINUTES = 10;
+
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
+      return String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+    }
+
+    function updateUrgencyPulse(remaining, totalSeconds) {
+      const root = document.documentElement;
+      const progress = 1 - (remaining / totalSeconds);
+
+      let duration = 2.6;
+      let minOpacity = 0.90;
+      let scale = 1.01;
+      let shadow = "0 4px 14px rgba(0,0,0,0.16)";
+
+      if (progress >= 0.25) {
+        duration = 2.2;
+        minOpacity = 0.86;
+        scale = 1.012;
+        shadow = "0 6px 18px rgba(217, 15, 31, 0.20)";
+      }
+
+      if (progress >= 0.50) {
+        duration = 1.8;
+        minOpacity = 0.80;
+        scale = 1.015;
+        shadow = "0 8px 22px rgba(217, 15, 31, 0.26)";
+      }
+
+      if (progress >= 0.75) {
+        duration = 1.35;
+        minOpacity = 0.72;
+        scale = 1.018;
+        shadow = "0 10px 28px rgba(217, 15, 31, 0.34)";
+      }
+
+      if (remaining <= 60) {
+        duration = 0.95;
+        minOpacity = 0.64;
+        scale = 1.022;
+        shadow = "0 12px 34px rgba(217, 15, 31, 0.42)";
+      }
+
+      root.style.setProperty("--expire-pulse-duration", duration + "s");
+      root.style.setProperty("--expire-pulse-min-opacity", minOpacity);
+      root.style.setProperty("--expire-pulse-scale", scale);
+      root.style.setProperty("--expire-pulse-shadow", shadow);
+    }
+
+    function startCountdown(initialMinutes) {
+      const totalSeconds = initialMinutes * 60;
+      let remaining = totalSeconds;
+
+      const topTimer = document.getElementById("topTimer");
+      const offerTimer = document.getElementById("offerTimer");
+
+      function render() {
+        const safeRemaining = Math.max(remaining, 0);
+        const formatted = formatTime(safeRemaining);
+
+        if (topTimer) topTimer.textContent = formatted;
+        if (offerTimer) offerTimer.textContent = formatted;
+
+        updateUrgencyPulse(safeRemaining, totalSeconds);
+      }
+
+      render();
+
+      const interval = setInterval(() => {
+        remaining--;
+        render();
+
+        if (remaining <= 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+
+    /* =========================================================
+       TRACKING / HEATMAP
+    ========================================================= */
+    const TRACK_ENDPOINT = "/api/track";
+    const PAGE_NAME = "upsell.html";
+
+    const trackState = {
+      sessionId: null,
+      leadId: "",
+      pageStart: Date.now(),
+      maxScroll: 0,
+      sectionEnterTimes: {},
+      sentSections: new Set(),
+      sentPriceView: false,
+      heartbeatSentAt: 0,
+      unloadSent: false,
+    };
+
+    function getOrCreateSessionId() {
+      const KEY = "lead_heatmap_session_id";
+      let id = localStorage.getItem(KEY);
+
+      if (!id) {
+        id = "sess_" + Math.random().toString(36).slice(2) + Date.now();
+        localStorage.setItem(KEY, id);
+      }
+
+      return id;
+    }
+
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || "";
+    }
+
+    function persistUtms() {
+      const keys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "lead_id"];
+      const url = new URL(window.location.href);
+
+      keys.forEach((key) => {
+        const value = url.searchParams.get(key);
+        if (value) {
+          sessionStorage.setItem(key, value);
+        }
+      });
+    }
+
+    function getStoredValue(key) {
+      return sessionStorage.getItem(key) || "";
+    }
+
+    function buildBasePayload() {
+      return {
+        session_id: trackState.sessionId,
+        lead_id: trackState.leadId,
+        page: PAGE_NAME,
+        url: window.location.href,
+        referrer: document.referrer || "",
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        scroll_percent: trackState.maxScroll,
+        time_on_page_ms: Date.now() - trackState.pageStart,
+
+        utm_source: getStoredValue("utm_source"),
+        utm_medium: getStoredValue("utm_medium"),
+        utm_campaign: getStoredValue("utm_campaign"),
+        utm_content: getStoredValue("utm_content"),
+        utm_term: getStoredValue("utm_term"),
+      };
+    }
+
+    async function sendTrack(payload) {
+      try {
+        await fetch(TRACK_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        });
+      } catch (error) {
+        console.error("Erro no tracking:", error);
+      }
+    }
+
+    function sendBeaconTrack(payload) {
+      try {
+        const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+        navigator.sendBeacon(TRACK_ENDPOINT, blob);
+      } catch (error) {
+        console.error("Erro no beacon tracking:", error);
+      }
+    }
+
+    function updateMaxScroll() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      const winHeight = window.innerHeight;
+      const scrollable = Math.max(1, docHeight - winHeight);
+      const percent = Math.round((scrollTop / scrollable) * 100);
+
+      if (percent > trackState.maxScroll) {
+        trackState.maxScroll = Math.min(100, percent);
+      }
+    }
+
+    function setupSectionTracking() {
+      const sections = document.querySelectorAll("[data-section]");
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const el = entry.target;
+          const sectionId = el.getAttribute("data-section") || "";
+          const sectionLabel = el.getAttribute("data-label") || sectionId;
+
+          if (!sectionId) return;
+
+          if (entry.isIntersecting) {
+            if (!trackState.sectionEnterTimes[sectionId]) {
+              trackState.sectionEnterTimes[sectionId] = Date.now();
+            }
+
+            if (!trackState.sentSections.has(sectionId)) {
+              trackState.sentSections.add(sectionId);
+
+              const payload = {
+                ...buildBasePayload(),
+                event_type: "section_view",
+                section_id: sectionId,
+                section_label: sectionLabel,
+                time_in_section_ms: 0,
+              };
+
+              sendTrack(payload);
+            }
+
+            if (
+              !trackState.sentPriceView &&
+              (sectionId === "price_section" || sectionId === "offer_section")
+            ) {
+              trackState.sentPriceView = true;
+
+              const payload = {
+                ...buildBasePayload(),
+                event_type: "price_view",
+                section_id: "price_section",
+                section_label: "Bloco de preço",
+              };
+
+              sendTrack(payload);
+            }
+          } else {
+            const enteredAt = trackState.sectionEnterTimes[sectionId];
+            if (enteredAt) {
+              const timeSpent = Math.max(0, Date.now() - enteredAt);
+
+              const payload = {
+                ...buildBasePayload(),
+                event_type: "section_time",
+                section_id: sectionId,
+                section_label: sectionLabel,
+                time_in_section_ms: timeSpent,
+              };
+
+              sendTrack(payload);
+              delete trackState.sectionEnterTimes[sectionId];
+            }
+          }
+        });
+      }, {
+        threshold: 0.45
+      });
+
+      sections.forEach((section) => observer.observe(section));
+    }
+
+    function setupCtaTracking() {
+      const clickableItems = document.querySelectorAll("[data-cta-id]");
+
+      clickableItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          const payload = {
+            ...buildBasePayload(),
+            event_type: "cta_click",
+            clicked: true,
+            cta_id: item.getAttribute("data-cta-id") || "",
+            cta_label: item.getAttribute("data-cta-label") || "",
+            section_id: item.id === "declineLink" ? "decline_section" : "price_section",
+            section_label: item.id === "declineLink" ? "Recusa" : "CTA principal",
+          };
+
+          sendTrack(payload);
+        });
+      });
+    }
+
+    function setupHeartbeat() {
+      setInterval(() => {
+        const now = Date.now();
+
+        if (now - trackState.heartbeatSentAt < 15000) return;
+        trackState.heartbeatSentAt = now;
+
+        const payload = {
+          ...buildBasePayload(),
+          event_type: "heartbeat",
+        };
+
+        sendTrack(payload);
+      }, 15000);
+    }
+
+    function flushOpenSections() {
+      Object.keys(trackState.sectionEnterTimes).forEach((sectionId) => {
+        const enteredAt = trackState.sectionEnterTimes[sectionId];
+        const el = document.querySelector(`[data-section="${sectionId}"]`);
+        const sectionLabel = el?.getAttribute("data-label") || sectionId;
+
+        if (!enteredAt) return;
+
+        const payload = {
+          ...buildBasePayload(),
+          event_type: "section_time",
+          section_id: sectionId,
+          section_label: sectionLabel,
+          time_in_section_ms: Math.max(0, Date.now() - enteredAt),
+        };
+
+        sendBeaconTrack(payload);
+      });
+    }
+
+    function setupUnloadTracking() {
+      window.addEventListener("beforeunload", () => {
+        if (trackState.unloadSent) return;
+        trackState.unloadSent = true;
+
+        updateMaxScroll();
+        flushOpenSections();
+
+        const payload = {
+          ...buildBasePayload(),
+          event_type: "page_exit",
+        };
+
+        sendBeaconTrack(payload);
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          updateMaxScroll();
+          flushOpenSections();
+
+          const payload = {
+            ...buildBasePayload(),
+            event_type: "page_hidden",
+          };
+
+          sendBeaconTrack(payload);
+        }
+      });
+    }
+
+    function setupScrollTracking() {
+      window.addEventListener("scroll", updateMaxScroll, { passive: true });
+      updateMaxScroll();
+    }
+
+    async function sendPageView() {
+      const payload = {
+        ...buildBasePayload(),
+        event_type: "page_view",
+      };
+
+      await sendTrack(payload);
+    }
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      startCountdown(COUNTDOWN_MINUTES);
+
+      persistUtms();
+
+      trackState.sessionId = getOrCreateSessionId();
+      trackState.leadId = getParam("lead_id") || getStoredValue("lead_id") || "";
+
+      setupScrollTracking();
+      setupSectionTracking();
+      setupCtaTracking();
+      setupHeartbeat();
+      setupUnloadTracking();
+
+      await sendPageView();
+    });
+  </script>
+</body>
+</html>

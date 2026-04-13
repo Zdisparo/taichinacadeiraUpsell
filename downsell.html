@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Downsell - Protocolo Completo da Barriga</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --red: #d90f1f;
+      --red-dark: #a50714;
+      --black: #0c0c0d;
+      --white: #ffffff;
+      --yellow: #ffd54a;
+      --yellow-strong: #ffbf00;
+      --green: #18c964;
+      --green-dark: #0f9d4b;
+      --gray-bg: #f5f5f7;
+      --text: #171717;
+      --muted: #646464;
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.12);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+
+      --expire-pulse-duration: 2.6s;
+      --expire-pulse-min-opacity: 0.90;
+      --expire-pulse-scale: 1.01;
+      --expire-pulse-shadow: 0 4px 14px rgba(0,0,0,0.16);
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: var(--gray-bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+      height: auto;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 860px;
+      background: #fff;
+      min-height: 100vh;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.02);
+    }
+
+    .expire-bar {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      width: 100%;
+      max-width: 860px;
+      background: linear-gradient(180deg, #d91422 0%, #b70c18 100%);
+      color: #fff;
+      text-align: center;
+      padding: 16px 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      font-size: 22px;
+      box-shadow: var(--expire-pulse-shadow);
+      will-change: opacity, transform, box-shadow;
+      animation: urgencyPulse var(--expire-pulse-duration) ease-in-out infinite;
+      transform-origin: center center;
+    }
+
+    @keyframes urgencyPulse {
+      0% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+        box-shadow: var(--expire-pulse-shadow);
+      }
+      50% {
+        opacity: var(--expire-pulse-min-opacity);
+        transform: translateX(-50%) scale(var(--expire-pulse-scale));
+        box-shadow: 0 8px 22px rgba(217, 15, 31, 0.28);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+        box-shadow: var(--expire-pulse-shadow);
+      }
+    }
+
+    .top-space {
+      height: 96px;
+      background: #fff;
+    }
+
+    .divider {
+      width: min(calc(100% - 36px), 760px);
+      height: 4px;
+      background: var(--red);
+      margin: 0 auto 24px;
+      border-radius: 999px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 18px 40px;
+    }
+
+    .step-bar {
+      background: #0f0f10;
+      color: #ffd54a;
+      text-align: center;
+      font-weight: 900;
+      padding: 18px 16px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      line-height: 1.35;
+      margin-bottom: 18px;
+      font-size: 20px;
+    }
+
+    .hero-alert {
+      background: linear-gradient(180deg, #ff1b32 0%, #d90f1f 100%);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 26px 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .hero-alert .icon {
+      font-size: 42px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .hero-alert h1 {
+      font-size: 38px;
+      line-height: 1.18;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .hero-alert p {
+      font-size: 24px;
+      line-height: 1.45;
+      font-weight: 800;
+    }
+
+    .lead-text {
+      font-size: 23px;
+      line-height: 1.6;
+      color: #2b2b2b;
+      margin-bottom: 18px;
+    }
+
+    .highlight-yellow {
+      background: linear-gradient(transparent 58%, #ffe66a 58%);
+      font-weight: 900;
+    }
+
+    .confirm-box {
+      background: #fafafa;
+      border-left: 4px solid var(--green);
+      color: #5b5b5b;
+      padding: 16px 18px;
+      font-size: 18px;
+      line-height: 1.6;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: var(--radius-xl);
+      padding: 30px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid #f0f0f0;
+      margin-bottom: 22px;
+    }
+
+    .card-outline-yellow {
+      border: 3px solid #f0d469;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.09);
+    }
+
+    .card-dark {
+      background: #0c0c0d;
+      color: #fff;
+      border-radius: var(--radius-xl);
+      padding: 30px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .icon-top {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .section-title {
+      font-size: 37px;
+      line-height: 1.18;
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      font-size: 23px;
+      line-height: 1.55;
+      color: #2d2d2d;
+    }
+
+    .card-dark .section-subtitle {
+      color: #e8e8e8;
+    }
+
+    .mini-divider {
+      width: 110px;
+      height: 4px;
+      background: #efc24d;
+      border-radius: 999px;
+      margin: 20px auto;
+    }
+
+    .notice-box {
+      background: #fff;
+      border-left: 5px solid var(--red);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 20px 18px;
+      margin-bottom: 22px;
+      font-size: 23px;
+      line-height: 1.6;
+      color: #2b2b2b;
+    }
+
+    .list-title-red {
+      color: #d30f20;
+      font-size: 31px;
+      line-height: 1.25;
+      font-weight: 900;
+      margin-bottom: 18px;
+    }
+
+    .benefit-list,
+    .pain-list {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+
+    .benefit-list li,
+    .pain-list li {
+      font-size: 23px;
+      line-height: 1.5;
+      padding: 0 0 14px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .card-dark .pain-list li {
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+
+    .benefit-list li:last-child,
+    .pain-list li:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .benefit-list strong,
+    .pain-list strong {
+      font-weight: 900;
+    }
+
+    .red-box {
+      background: linear-gradient(180deg, #ff2240 0%, #d71021 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 22px 18px;
+      text-align: center;
+      font-size: 27px;
+      line-height: 1.4;
+      font-weight: 900;
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+
+    .yellow-box {
+      background: #ffdb2f;
+      color: #111;
+      border-radius: 16px;
+      padding: 20px 18px;
+      text-align: center;
+      font-size: 26px;
+      line-height: 1.4;
+      font-weight: 900;
+      margin-top: 12px;
+    }
+
+    .dark-headline {
+      font-size: 36px;
+      line-height: 1.2;
+      font-weight: 900;
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .dark-copy {
+      font-size: 23px;
+      line-height: 1.65;
+      color: #f0f0f0;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .dark-copy .yellow {
+      color: #ffd24b;
+      font-weight: 900;
+    }
+
+    .dark-copy .green {
+      color: #27df75;
+      font-weight: 900;
+    }
+
+    .pain-grid {
+      background: #141415;
+      border: 2px solid rgba(255, 40, 70, 0.55);
+      border-radius: 18px;
+      padding: 20px 18px;
+      margin-top: 20px;
+    }
+
+    .pain-grid h3 {
+      color: #ffd54a;
+      font-size: 30px;
+      line-height: 1.25;
+      font-weight: 900;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .pain-list li {
+      color: #fff;
+    }
+
+    .offer-card {
+      background: linear-gradient(180deg, #1ad669 0%, #0eba57 100%);
+      color: #fff;
+      border-radius: 26px;
+      padding: 28px 22px 24px;
+      box-shadow: 0 18px 36px rgba(16, 150, 74, 0.28);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .offer-title {
+      font-size: 39px;
+      line-height: 1.15;
+      font-weight: 900;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .offer-box {
+      background: rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 24px 16px;
+      margin: 14px 0 18px;
+    }
+
+    .normal-price {
+      font-size: 25px;
+      line-height: 1.3;
+      font-weight: 800;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+
+    .normal-price s {
+      opacity: 0.8;
+    }
+
+    .today-price {
+      font-size: 64px;
+      line-height: 1;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .offer-expire {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .cta-button {
+      display: block;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #ffcc24 0%, #ffb400 100%);
+      color: #111;
+      text-align: center;
+      font-size: 31px;
+      line-height: 1.25;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 24px 16px;
+      border-radius: 18px;
+      box-shadow: 0 14px 28px rgba(255, 180, 0, 0.32);
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .cta-meta {
+      text-align: center;
+      color: #f0fff4;
+      font-size: 18px;
+      line-height: 1.5;
+      margin-top: 14px;
+      font-weight: 700;
+    }
+
+    .icon-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .icon-info {
+      text-align: center;
+      font-size: 17px;
+      line-height: 1.35;
+      color: #404040;
+      font-weight: 700;
+    }
+
+    .icon-info span {
+      display: block;
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .decline-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 18px;
+      color: #666;
+      text-decoration: underline;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 12px 18px 34px;
+      color: #6a6a6a;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+      .expire-bar {
+        font-size: 17px;
+        padding: 14px 10px;
+      }
+
+      .top-space {
+        height: 84px;
+      }
+
+      .divider {
+        width: calc(100% - 24px);
+        margin-bottom: 18px;
+      }
+
+      .container {
+        padding: 0 12px 28px;
+      }
+
+      .step-bar {
+        font-size: 16px;
+        padding: 14px 12px;
+      }
+
+      .hero-alert {
+        padding: 22px 14px;
+      }
+
+      .hero-alert h1,
+      .section-title,
+      .dark-headline,
+      .offer-title {
+        font-size: 30px;
+      }
+
+      .hero-alert p,
+      .section-subtitle,
+      .lead-text,
+      .notice-box,
+      .dark-copy,
+      .benefit-list li,
+      .pain-list li {
+        font-size: 19px;
+      }
+
+      .card,
+      .card-dark {
+        padding: 24px 16px;
+      }
+
+      .list-title-red,
+      .today-price {
+        font-size: 26px;
+      }
+
+      .red-box,
+      .yellow-box {
+        font-size: 22px;
+      }
+
+      .cta-button {
+        font-size: 24px;
+        padding: 20px 14px;
+      }
+
+      .cta-meta {
+        font-size: 15px;
+      }
+
+      .icon-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .icon-info {
+        font-size: 14px;
+      }
+
+      .icon-info span {
+        font-size: 28px;
+      }
+
+      .offer-box {
+        padding: 18px 12px;
+      }
+
+      .normal-price {
+        font-size: 20px;
+      }
+
+      .offer-expire {
+        font-size: 17px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .hero-alert h1,
+      .section-title,
+      .dark-headline,
+      .offer-title {
+        font-size: 25px;
+      }
+
+      .hero-alert p,
+      .section-subtitle,
+      .lead-text,
+      .notice-box,
+      .dark-copy,
+      .benefit-list li,
+      .pain-list li {
+        font-size: 17px;
+      }
+
+      .list-title-red {
+        font-size: 23px;
+      }
+
+      .red-box,
+      .yellow-box {
+        font-size: 19px;
+      }
+
+      .today-price {
+        font-size: 50px;
+      }
+
+      .cta-button {
+        font-size: 21px;
+      }
+
+      .top-space {
+        height: 78px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="expire-bar" id="expireBar" data-section="sticky_timer" data-label="Barra fixa do contador">
+      ⏰ ÚLTIMA OPORTUNIDADE EXPIRA EM: <span id="topTimer">10:00</span>
+    </div>
+
+    <div class="top-space"></div>
+    <div class="divider"></div>
+
+    <div class="container">
+      <section class="step-bar" data-section="step_bar" data-label="Barra de passo">
+        ⚠️ ÚLTIMO PASSO: ANTES DE SAIR, VEJA ISSO...
+      </section>
+
+      <section class="hero-alert" data-section="hero_section" data-label="Headline principal downsell">
+        <span class="icon">🙏</span>
+        <h1>VOCÊ JÁ É NOSSO ALUNO. AGORA QUEREMOS TE ENTREGAR O PLANO COMPLETO PELO MENOR PREÇO POSSÍVEL.</h1>
+        <p>
+          O Tai Chi na Cadeira já está garantido.
+          <br /><br />
+          Mas como a <span style="font-weight: 900;">barriga costuma ser a parte mais difícil de responder</span>,
+          decidimos reduzir drasticamente este complemento para você não começar sua jornada sem a parte que pode acelerar justamente essa região.
+        </p>
+      </section>
+
+      <section data-section="intro_section" data-label="Introdução e agradecimento">
+        <p class="lead-text">
+          <span class="highlight-yellow">Sendo bem honestos com você:</span>
+          só de você ter se tornado nosso aluno já é suficiente para nós.
+          <br /><br />
+          Por isso, não queremos te deixar seguir com sensação de plano incompleto.
+          Se existe uma parte do corpo em que mais homens travam, perdem motivação e demoram a ver mudança, essa parte é a <strong>barriga</strong>.
+        </p>
+
+        <div class="confirm-box">
+          ✅ Seu pedido principal está <strong>confirmado e seguro</strong>. Agora estamos te liberando uma condição especial apenas para que você leve também o complemento que ajuda a deixar sua estratégia mais completa, mais forte e mais focada na região abdominal.
+        </div>
+      </section>
+
+      <section class="card card-outline-yellow center" data-section="problem_section" data-label="Dor principal da barriga">
+        <span class="icon-top">🎯</span>
+        <h2 class="section-title">A barriga é justamente o lugar em que muitos homens mais demoram para ver resultado</h2>
+        <div class="mini-divider"></div>
+        <p class="section-subtitle">
+          E é nessa fase que muita gente começa a duvidar do próprio corpo...
+          <br /><br />
+          não porque o método não funciona,
+          <br />
+          mas porque a região mais difícil ainda não respondeu do jeito que ele esperava.
+        </p>
+      </section>
+
+      <section class="notice-box" data-section="risk_section" data-label="Risco de sair sem a oferta">
+        Se você sair desta página agora, vai continuar apenas com o plano principal.
+        <br /><br />
+        Mas perde a única chance de levar, por um valor muito abaixo do normal, o complemento criado para dar apoio justamente no ponto mais difícil da transformação:
+        <strong>a resposta da barriga</strong>.
+      </section>
+
+      <section class="card" data-section="benefits_section" data-label="Benefícios principais downsell">
+        <h3 class="list-title-red">🔥 O que você ganha levando o protocolo agora:</h3>
+        <ul class="benefit-list">
+          <li><strong>Mais chance de perceber a barriga responder antes</strong></li>
+          <li><strong>Mais leveza e menos sensação de inchaço</strong></li>
+          <li><strong>Mais confiança</strong> para seguir o Tai Chi na Cadeira sem desanimar</li>
+          <li><strong>Mais sensação de plano completo</strong>, sem deixar a parte mais difícil descoberta</li>
+          <li><strong>Mais valor por muito menos</strong>, só porque você já entrou no método principal</li>
+        </ul>
+
+        <div class="red-box">
+          Se a barriga é justamente o ponto mais difícil...
+          <br /><br />
+          então faz sentido começar sem o complemento criado para dar suporte nessa parte?
+        </div>
+
+        <div class="yellow-box">
+          Você já deu o passo principal.
+          <br />
+          Agora só falta garantir que ele venha com a estratégia completa.
+        </div>
+      </section>
+
+      <section class="offer-card" id="offerCard" data-section="offer_section" data-label="Oferta principal downsell">
+        <div class="offer-title">PROTOCOLO COMPLETO DA BARRIGA</div>
+        <div style="font-size: 24px; font-weight: 800; line-height: 1.45;">
+          O complemento ideal para fortalecer sua estratégia, aumentar a percepção de progresso
+          e dar suporte justamente à região que mais demora para responder.
+        </div>
+
+        <div class="offer-box" id="priceBox" data-section="price_section" data-label="Bloco de preço downsell">
+          <div class="normal-price">Preço normal: <s>R$ 197,00</s></div>
+          <div style="font-size: 24px; font-weight: 800; margin-bottom: 8px;">Hoje, como agradecimento por você já ser nosso aluno:</div>
+          <div class="today-price">R$ 9,90</div>
+          <div class="offer-expire">⏰ Esta condição final expira em: <span id="offerTimer">10:00</span></div>
+        </div>
+
+        <a
+          href="https://pay.cakto.com.br/hqkbkqf"
+          class="cta-button"
+          id="mainCta"
+          data-cta-id="downsell_main_cta"
+          data-cta-label="Garantir protocolo completo por 17,90"
+        >
+          SIM, QUERO GARANTIR O PROTOCOLO COMPLETO POR R$ 17,90 →
+        </a>
+
+        <div class="cta-meta">
+          🔒 Pagamento 100% seguro &nbsp;|&nbsp; ✅ Garantia de 30 dias &nbsp;|&nbsp; 📲 Acesso imediato
+        </div>
+      </section>
+
+      <section class="card-dark" data-section="objection_section" data-label="Quebra de objeção downsell">
+        <h2 class="dark-headline">Por que estamos baixando tanto o valor?</h2>
+        <div class="mini-divider"></div>
+        <p class="dark-copy">
+          Não é porque esse protocolo vale pouco.
+          <br /><br />
+          É porque você <span class="yellow">já confiou na gente</span> e entrou no Tai Chi na Cadeira.
+          <br /><br />
+          Então preferimos abrir mão da margem agora e deixar você começar com uma estratégia mais <span class="green">completa</span>, em vez de correr o risco de sentir que faltou justamente apoio na parte mais difícil.
+        </p>
+
+        <div class="pain-grid">
+          <h3>Por que essa oferta final faz sentido:</h3>
+          <ul class="pain-list">
+            <li><strong>1.</strong> A barriga costuma ser a parte mais resistente</li>
+            <li><strong>2.</strong> Quando ela responde, sua motivação sobe</li>
+            <li><strong>3.</strong> O protocolo entra como apoio extra nessa região</li>
+            <li><strong>4.</strong> Você leva mais valor pagando muito menos</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card center" data-section="final_push_section" data-label="Empurrão final downsell">
+        <span class="icon-top">✅</span>
+        <h2 class="section-title">Você já escolheu mudar. Agora complete sua estratégia com inteligência.</h2>
+        <div class="mini-divider"></div>
+        <p class="section-subtitle">
+          Essa condição não volta depois que você sair desta página.
+          <br /><br />
+          Se você quer a melhor chance de ver a barriga responder mais cedo, esse é o momento de garantir.
+        </p>
+      </section>
+
+      <div class="icon-row" data-section="trust_icons" data-label="Ícones de confiança">
+        <div class="icon-info">
+          <span>🔒</span>
+          Pagamento seguro
+        </div>
+        <div class="icon-info">
+          <span>✅</span>
+          Garantia
+        </div>
+        <div class="icon-info">
+          <span>⚡</span>
+          Acesso imediato
+        </div>
+        <div class="icon-info">
+          <span>🎁</span>
+          Valor especial
+        </div>
+      </div>
+
+      <a
+        href="pagina-obrigado.html"
+        class="decline-link"
+        id="declineLink"
+        data-cta-id="downsell_decline"
+        data-cta-label="Recusar downsell"
+      >
+        Não, quero continuar apenas com o plano principal
+      </a>
+    </div>
+
+    <footer class="footer" data-section="footer_section" data-label="Rodapé">
+      <p><strong>Aviso:</strong> este é um complemento digital de apoio ao seu plano principal.</p>
+      <p>Copyright 2026 © Todos os direitos reservados.</p>
+      <p>Política de Privacidade • Termos de Uso • Aviso Legal</p>
+    </footer>
+  </main>
+
+  <script>
+    const COUNTDOWN_MINUTES = 10;
+
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
+      return String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+    }
+
+    function updateUrgencyPulse(remaining, totalSeconds) {
+      const root = document.documentElement;
+      const progress = 1 - (remaining / totalSeconds);
+
+      let duration = 2.6;
+      let minOpacity = 0.90;
+      let scale = 1.01;
+      let shadow = "0 4px 14px rgba(0,0,0,0.16)";
+
+      if (progress >= 0.25) {
+        duration = 2.2;
+        minOpacity = 0.86;
+        scale = 1.012;
+        shadow = "0 6px 18px rgba(217, 15, 31, 0.20)";
+      }
+
+      if (progress >= 0.50) {
+        duration = 1.8;
+        minOpacity = 0.80;
+        scale = 1.015;
+        shadow = "0 8px 22px rgba(217, 15, 31, 0.26)";
+      }
+
+      if (progress >= 0.75) {
+        duration = 1.35;
+        minOpacity = 0.72;
+        scale = 1.018;
+        shadow = "0 10px 28px rgba(217, 15, 31, 0.34)";
+      }
+
+      if (remaining <= 60) {
+        duration = 0.95;
+        minOpacity = 0.64;
+        scale = 1.022;
+        shadow = "0 12px 34px rgba(217, 15, 31, 0.42)";
+      }
+
+      root.style.setProperty("--expire-pulse-duration", duration + "s");
+      root.style.setProperty("--expire-pulse-min-opacity", minOpacity);
+      root.style.setProperty("--expire-pulse-scale", scale);
+      root.style.setProperty("--expire-pulse-shadow", shadow);
+    }
+
+    function startCountdown(initialMinutes) {
+      const totalSeconds = initialMinutes * 60;
+      let remaining = totalSeconds;
+
+      const topTimer = document.getElementById("topTimer");
+      const offerTimer = document.getElementById("offerTimer");
+
+      function render() {
+        const safeRemaining = Math.max(remaining, 0);
+        const formatted = formatTime(safeRemaining);
+
+        if (topTimer) topTimer.textContent = formatted;
+        if (offerTimer) offerTimer.textContent = formatted;
+
+        updateUrgencyPulse(safeRemaining, totalSeconds);
+      }
+
+      render();
+
+      const interval = setInterval(() => {
+        remaining--;
+        render();
+
+        if (remaining <= 0) {
+          clearInterval(interval);
+        }
+      }, 1000);
+    }
+
+    /* =========================================================
+       TRACKING / HEATMAP
+    ========================================================= */
+    const TRACK_ENDPOINT = "/api/track";
+    const PAGE_NAME = "downsell.html";
+
+    const trackState = {
+      sessionId: null,
+      leadId: "",
+      pageStart: Date.now(),
+      maxScroll: 0,
+      sectionEnterTimes: {},
+      sentSections: new Set(),
+      sentPriceView: false,
+      heartbeatSentAt: 0,
+      unloadSent: false,
+    };
+
+    function getOrCreateSessionId() {
+      const KEY = "lead_heatmap_session_id";
+      let id = localStorage.getItem(KEY);
+
+      if (!id) {
+        id = "sess_" + Math.random().toString(36).slice(2) + Date.now();
+        localStorage.setItem(KEY, id);
+      }
+
+      return id;
+    }
+
+    function getParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || "";
+    }
+
+    function persistUtms() {
+      const keys = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "lead_id"];
+      const url = new URL(window.location.href);
+
+      keys.forEach((key) => {
+        const value = url.searchParams.get(key);
+        if (value) {
+          sessionStorage.setItem(key, value);
+        }
+      });
+    }
+
+    function getStoredValue(key) {
+      return sessionStorage.getItem(key) || "";
+    }
+
+    function buildBasePayload() {
+      return {
+        session_id: trackState.sessionId,
+        lead_id: trackState.leadId,
+        page: PAGE_NAME,
+        url: window.location.href,
+        referrer: document.referrer || "",
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        scroll_percent: trackState.maxScroll,
+        time_on_page_ms: Date.now() - trackState.pageStart,
+
+        utm_source: getStoredValue("utm_source"),
+        utm_medium: getStoredValue("utm_medium"),
+        utm_campaign: getStoredValue("utm_campaign"),
+        utm_content: getStoredValue("utm_content"),
+        utm_term: getStoredValue("utm_term"),
+      };
+    }
+
+    async function sendTrack(payload) {
+      try {
+        await fetch(TRACK_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          keepalive: true,
+        });
+      } catch (error) {
+        console.error("Erro no tracking:", error);
+      }
+    }
+
+    function sendBeaconTrack(payload) {
+      try {
+        const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+        navigator.sendBeacon(TRACK_ENDPOINT, blob);
+      } catch (error) {
+        console.error("Erro no beacon tracking:", error);
+      }
+    }
+
+    function updateMaxScroll() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+      const docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      const winHeight = window.innerHeight;
+      const scrollable = Math.max(1, docHeight - winHeight);
+      const percent = Math.round((scrollTop / scrollable) * 100);
+
+      if (percent > trackState.maxScroll) {
+        trackState.maxScroll = Math.min(100, percent);
+      }
+    }
+
+    function setupSectionTracking() {
+      const sections = document.querySelectorAll("[data-section]");
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const el = entry.target;
+          const sectionId = el.getAttribute("data-section") || "";
+          const sectionLabel = el.getAttribute("data-label") || sectionId;
+
+          if (!sectionId) return;
+
+          if (entry.isIntersecting) {
+            if (!trackState.sectionEnterTimes[sectionId]) {
+              trackState.sectionEnterTimes[sectionId] = Date.now();
+            }
+
+            if (!trackState.sentSections.has(sectionId)) {
+              trackState.sentSections.add(sectionId);
+
+              const payload = {
+                ...buildBasePayload(),
+                event_type: "section_view",
+                section_id: sectionId,
+                section_label: sectionLabel,
+                time_in_section_ms: 0,
+              };
+
+              sendTrack(payload);
+            }
+
+            if (
+              !trackState.sentPriceView &&
+              (sectionId === "price_section" || sectionId === "offer_section")
+            ) {
+              trackState.sentPriceView = true;
+
+              const payload = {
+                ...buildBasePayload(),
+                event_type: "price_view",
+                section_id: "price_section",
+                section_label: "Bloco de preço downsell",
+              };
+
+              sendTrack(payload);
+            }
+          } else {
+            const enteredAt = trackState.sectionEnterTimes[sectionId];
+            if (enteredAt) {
+              const timeSpent = Math.max(0, Date.now() - enteredAt);
+
+              const payload = {
+                ...buildBasePayload(),
+                event_type: "section_time",
+                section_id: sectionId,
+                section_label: sectionLabel,
+                time_in_section_ms: timeSpent,
+              };
+
+              sendTrack(payload);
+              delete trackState.sectionEnterTimes[sectionId];
+            }
+          }
+        });
+      }, {
+        threshold: 0.45
+      });
+
+      sections.forEach((section) => observer.observe(section));
+    }
+
+    function setupCtaTracking() {
+      const clickableItems = document.querySelectorAll("[data-cta-id]");
+
+      clickableItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          const payload = {
+            ...buildBasePayload(),
+            event_type: "cta_click",
+            clicked: true,
+            cta_id: item.getAttribute("data-cta-id") || "",
+            cta_label: item.getAttribute("data-cta-label") || "",
+            section_id: item.id === "declineLink" ? "decline_section" : "price_section",
+            section_label: item.id === "declineLink" ? "Recusa downsell" : "CTA principal downsell",
+          };
+
+          sendTrack(payload);
+        });
+      });
+    }
+
+    function setupHeartbeat() {
+      setInterval(() => {
+        const now = Date.now();
+
+        if (now - trackState.heartbeatSentAt < 15000) return;
+        trackState.heartbeatSentAt = now;
+
+        const payload = {
+          ...buildBasePayload(),
+          event_type: "heartbeat",
+        };
+
+        sendTrack(payload);
+      }, 15000);
+    }
+
+    function flushOpenSections() {
+      Object.keys(trackState.sectionEnterTimes).forEach((sectionId) => {
+        const enteredAt = trackState.sectionEnterTimes[sectionId];
+        const el = document.querySelector(`[data-section="${sectionId}"]`);
+        const sectionLabel = el?.getAttribute("data-label") || sectionId;
+
+        if (!enteredAt) return;
+
+        const payload = {
+          ...buildBasePayload(),
+          event_type: "section_time",
+          section_id: sectionId,
+          section_label: sectionLabel,
+          time_in_section_ms: Math.max(0, Date.now() - enteredAt),
+        };
+
+        sendBeaconTrack(payload);
+      });
+    }
+
+    function setupUnloadTracking() {
+      window.addEventListener("beforeunload", () => {
+        if (trackState.unloadSent) return;
+        trackState.unloadSent = true;
+
+        updateMaxScroll();
+        flushOpenSections();
+
+        const payload = {
+          ...buildBasePayload(),
+          event_type: "page_exit",
+        };
+
+        sendBeaconTrack(payload);
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          updateMaxScroll();
+          flushOpenSections();
+
+          const payload = {
+            ...buildBasePayload(),
+            event_type: "page_hidden",
+          };
+
+          sendBeaconTrack(payload);
+        }
+      });
+    }
+
+    function setupScrollTracking() {
+      window.addEventListener("scroll", updateMaxScroll, { passive: true });
+      updateMaxScroll();
+    }
+
+    async function sendPageView() {
+      const payload = {
+        ...buildBasePayload(),
+        event_type: "page_view",
+      };
+
+      await sendTrack(payload);
+    }
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      startCountdown(COUNTDOWN_MINUTES);
+
+      persistUtms();
+
+      trackState.sessionId = getOrCreateSessionId();
+      trackState.leadId = getParam("lead_id") || getStoredValue("lead_id") || "";
+
+      setupScrollTracking();
+      setupSectionTracking();
+      setupCtaTracking();
+      setupHeartbeat();
+      setupUnloadTracking();
+
+      await sendPageView();
+    });
+  </script>
+</body>
+</html>
