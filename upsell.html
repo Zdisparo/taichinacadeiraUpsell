@@ -46,6 +46,7 @@
       font-family: Arial, Helvetica, sans-serif;
       -webkit-text-size-adjust: 100%;
       overflow-x: hidden;
+      scroll-behavior: auto;
     }
 
     body {
@@ -504,14 +505,15 @@
 
     .fade-section {
       opacity: 0;
-      transform: translateY(18px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
+      transform: translate3d(0, 18px, 0);
+      transition: opacity 0.55s ease, transform 0.55s ease;
       will-change: opacity, transform;
+      backface-visibility: hidden;
     }
 
     .fade-section.is-visible {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
 
     .continue-reading {
@@ -533,6 +535,7 @@
       animation: continuePulse 1.8s ease-in-out infinite;
       transition: opacity 0.35s ease, transform 0.35s ease;
       pointer-events: none;
+      will-change: transform, opacity;
     }
 
     .continue-reading.hidden {
@@ -607,26 +610,38 @@
       }
 
       .container {
-        padding: 0 12px 28px;
+        padding: 0 14px 32px;
       }
 
       .step-bar {
-        font-size: 16px;
-        padding: 14px 12px;
+        font-size: 18px;
+        line-height: 1.45;
+        padding: 16px 14px;
+        border-radius: 12px;
       }
 
       .hero-alert {
-        padding: 22px 14px;
+        padding: 24px 16px;
+        border-radius: 20px;
       }
 
-      .hero-alert h1,
+      .hero-alert h1 {
+        font-size: 32px;
+        line-height: 1.22;
+      }
+
+      .hero-alert p {
+        font-size: 22px;
+        line-height: 1.6;
+      }
+
       .section-title,
       .dark-headline,
       .offer-title {
-        font-size: 30px;
+        font-size: 31px;
+        line-height: 1.24;
       }
 
-      .hero-alert p,
       .section-subtitle,
       .lead-text,
       .notice-box,
@@ -634,39 +649,64 @@
       .benefit-list li,
       .pain-list li,
       .short-list li {
+        font-size: 21px;
+        line-height: 1.68;
+      }
+
+      .confirm-box {
         font-size: 19px;
+        line-height: 1.68;
+        padding: 18px 16px;
       }
 
       .card,
       .card-dark {
-        padding: 24px 16px;
+        padding: 26px 18px;
+        border-radius: 22px;
       }
 
-      .list-title-red,
-      .today-price {
-        font-size: 26px;
+      .list-title-red {
+        font-size: 29px;
+        line-height: 1.28;
       }
 
       .red-box,
       .yellow-box {
+        font-size: 23px;
+        line-height: 1.52;
+        padding: 22px 16px;
+      }
+
+      .today-price {
+        font-size: 54px;
+      }
+
+      .normal-price {
         font-size: 22px;
       }
 
+      .offer-expire {
+        font-size: 18px;
+      }
+
       .cta-button {
-        font-size: 24px;
-        padding: 20px 14px;
+        font-size: 25px;
+        line-height: 1.32;
+        padding: 22px 14px;
       }
 
       .cta-meta {
-        font-size: 15px;
+        font-size: 16px;
+        line-height: 1.6;
       }
 
       .icon-row {
         grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
       }
 
       .icon-info {
-        font-size: 14px;
+        font-size: 15px;
       }
 
       .icon-info span {
@@ -674,21 +714,13 @@
       }
 
       .offer-box {
-        padding: 18px 12px;
-      }
-
-      .normal-price {
-        font-size: 20px;
-      }
-
-      .offer-expire {
-        font-size: 17px;
+        padding: 20px 14px;
       }
 
       .continue-reading {
         right: 12px;
         bottom: 18px;
-        padding: 10px 14px;
+        padding: 11px 14px;
         font-size: 14px;
         gap: 8px;
       }
@@ -696,17 +728,29 @@
       .continue-reading .arrow {
         font-size: 18px;
       }
+
+      .fade-section {
+        transform: translate3d(0, 12px, 0);
+        transition: opacity 0.42s ease, transform 0.42s ease;
+        will-change: auto;
+      }
     }
 
     @media (max-width: 420px) {
-      .hero-alert h1,
+      .hero-alert h1 {
+        font-size: 28px;
+      }
+
+      .hero-alert p {
+        font-size: 20px;
+      }
+
       .section-title,
       .dark-headline,
       .offer-title {
-        font-size: 25px;
+        font-size: 27px;
       }
 
-      .hero-alert p,
       .section-subtitle,
       .lead-text,
       .notice-box,
@@ -714,28 +758,51 @@
       .benefit-list li,
       .pain-list li,
       .short-list li {
-        font-size: 17px;
+        font-size: 19px;
+        line-height: 1.72;
+      }
+
+      .confirm-box {
+        font-size: 18px;
       }
 
       .list-title-red {
-        font-size: 23px;
+        font-size: 25px;
       }
 
       .red-box,
       .yellow-box {
-        font-size: 19px;
+        font-size: 21px;
       }
 
       .today-price {
-        font-size: 50px;
+        font-size: 48px;
       }
 
       .cta-button {
-        font-size: 21px;
+        font-size: 22px;
       }
 
       .top-space {
         height: 78px;
+      }
+
+      .card,
+      .card-dark {
+        padding: 24px 16px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fade-section,
+      .fade-section.is-visible,
+      .continue-reading,
+      .continue-reading .arrow,
+      .expire-bar {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
       }
     }
   </style>
@@ -848,7 +915,7 @@
           data-cta-id="upsell_main_cta"
           data-cta-label="Adicionar barriga negativa"
         >
-          SIM, QUERO ADICIONAR O PROTOCOLO:BARRIGA CHAPADA 40+ AO MEU PLANO →
+          SIM, QUERO ADICIONAR O PROTOCOLO: BARRIGA CHAPADA 40+ A AO MEU PLANO →
         </a>
 
         <div class="cta-meta">
@@ -1011,18 +1078,21 @@
 
     function setupFadeSections() {
       const fadeItems = document.querySelectorAll(".fade-section");
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-      const fadeObserver = new IntersectionObserver((entries) => {
+      const fadeObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
-          } else if (entry.boundingClientRect.top > 0) {
-            entry.target.classList.remove("is-visible");
+
+            if (isMobile) {
+              observer.unobserve(entry.target);
+            }
           }
         });
       }, {
-        threshold: 0.14,
-        rootMargin: "0px 0px -8% 0px"
+        threshold: isMobile ? 0.08 : 0.14,
+        rootMargin: isMobile ? "0px 0px -4% 0px" : "0px 0px -8% 0px"
       });
 
       fadeItems.forEach((item) => fadeObserver.observe(item));
@@ -1034,12 +1104,6 @@
 
       if (!indicator || !priceBox) return;
 
-      const toggleIndicator = () => {
-        const rect = priceBox.getBoundingClientRect();
-        const reachedPrice = rect.top <= window.innerHeight * 0.82;
-        indicator.classList.toggle("hidden", reachedPrice);
-      };
-
       const priceObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           indicator.classList.toggle("hidden", entry.isIntersecting);
@@ -1049,9 +1113,6 @@
       });
 
       priceObserver.observe(priceBox);
-      window.addEventListener("scroll", toggleIndicator, { passive: true });
-      window.addEventListener("resize", toggleIndicator);
-      toggleIndicator();
     }
 
     /* =========================================================
