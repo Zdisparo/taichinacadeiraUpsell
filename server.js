@@ -255,15 +255,21 @@ function summarizeSessions(events) {
   const sessionsMap = new Map();
 
   for (const event of events) {
-    const key = event.session_id || "no-session";
+    const sessionId = event.session_id || "no-session";
+    const page = event.page || "no-page";
+
+    // CORREÇÃO DO BUG:
+    // agrupa por session + page, e não só session
+    const key = `${sessionId}__${page}`;
 
     if (!sessionsMap.has(key)) {
       sessionsMap.set(key, {
-        session_id: key,
+        session_key: key,
+        session_id: sessionId,
         lead_id: event.lead_id || "",
         started_at: event.created_at,
         last_event_at: event.created_at,
-        page: event.page || "",
+        page,
         max_scroll_percent: 0,
         viewed_sections: new Set(),
         reached_price: false,
@@ -315,8 +321,11 @@ function summarizeSections(events) {
   for (const event of events) {
     if (!event.section_id) continue;
 
-    if (!sections[event.section_id]) {
-      sections[event.section_id] = {
+    const key = `${event.page || "no-page"}__${event.section_id}`;
+
+    if (!sections[key]) {
+      sections[key] = {
+        page: event.page || "",
         section_id: event.section_id,
         section_label: event.section_label || event.section_id,
         unique_sessions: new Set(),
@@ -326,17 +335,18 @@ function summarizeSections(events) {
       };
     }
 
-    const row = sections[event.section_id];
+    const row = sections[key];
     row.views += 1;
     row.total_time_in_section_ms += safeNumber(event.time_in_section_ms, 0);
 
     if (event.session_id) {
-      row.unique_sessions.add(event.session_id);
+      row.unique_sessions.add(`${event.session_id}__${event.page || "no-page"}`);
     }
   }
 
   return Object.values(sections)
     .map((row) => ({
+      page: row.page,
       section_id: row.section_id,
       section_label: row.section_label,
       views: row.views,
@@ -425,7 +435,7 @@ app.get("/dashboard", (req, res) => {
       <head><title>Dashboard não encontrado</title></head>
       <body style="font-family: Arial; padding: 24px;">
         <h1>dashboard.html não encontrado</h1>
-        <p>No próximo arquivo eu vou te mandar o dashboard.</p>
+        <p>O arquivo do dashboard não foi encontrado na raiz.</p>
       </body>
     </html>
   `);
