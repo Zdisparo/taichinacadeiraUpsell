@@ -1,24 +1,24 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const fsp = require("fs/promises");
 const crypto = require("crypto");
-const sqlite3 = require("sqlite3").verbose();
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 const ROOT_DIR = __dirname;
 
-/*
-  LOCAL:
-    ./data/lead-heatmap.db
+const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
 
-  RENDER COM DISCO PERSISTENTE:
-    defina no Render:
-    DB_PATH=/var/data/lead-heatmap.db
-*/
-const DB_PATH = process.env.DB_PATH || path.join(ROOT_DIR, "data", "lead-heatmap.db");
+if (!SUPABASE_DB_URL) {
+  console.error("❌ SUPABASE_DB_URL não definida.");
+  process.exit(1);
+}
+
+const pool = new Pool({
+  connectionString: SUPABASE_DB_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -78,7 +78,7 @@ function normalizeEvent(body, req) {
     time_in_section_ms: Math.max(0, safeNumber(body.time_in_section_ms, 0)),
     viewport_w: Math.max(0, safeNumber(body.viewport_w, 0)),
     viewport_h: Math.max(0, safeNumber(body.viewport_h, 0)),
-    clicked: parseBoolean(body.clicked) ? 1 : 0,
+    clicked: parseBoolean(body.clicked),
     cta_id: safeString(body.cta_id || "", 120),
     cta_label: safeString(body.cta_label || "", 160),
     referrer: safeString(body.referrer || "", 500),
@@ -99,52 +99,17 @@ function normalizeEvent(body, req) {
 }
 
 /* =========================================================
-   SQLITE
+   DATABASE
 ========================================================= */
-let db;
-
-function openDb() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const dbDir = path.dirname(DB_PATH);
-      await fsp.mkdir(dbDir, { recursive: true });
-
-      db = new sqlite3.Database(DB_PATH, (err) => {
-        if (err) return reject(err);
-        resolve();
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
-function run(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve({
-        lastID: this.lastID,
-        changes: this.changes,
-      });
-    });
-  });
-}
-
-function all(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
+async function query(sql, params = []) {
+  return pool.query(sql, params);
 }
 
 async function initDb() {
-  await run(`
+  await query(`
     CREATE TABLE IF NOT EXISTS lead_events (
       id TEXT PRIMARY KEY,
-      created_at TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL,
       session_id TEXT,
       lead_id TEXT,
       event_type TEXT,
@@ -156,7 +121,7 @@ async function initDb() {
       time_in_section_ms INTEGER DEFAULT 0,
       viewport_w INTEGER DEFAULT 0,
       viewport_h INTEGER DEFAULT 0,
-      clicked INTEGER DEFAULT 0,
+      clicked BOOLEAN DEFAULT FALSE,
       cta_id TEXT,
       cta_label TEXT,
       referrer TEXT,
@@ -173,15 +138,15 @@ async function initDb() {
     )
   `);
 
-  await run(`CREATE INDEX IF NOT EXISTS idx_lead_events_created_at ON lead_events(created_at)`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_lead_events_session_id ON lead_events(session_id)`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_lead_events_page ON lead_events(page)`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_lead_events_event_type ON lead_events(event_type)`);
-  await run(`CREATE INDEX IF NOT EXISTS idx_lead_events_section_id ON lead_events(section_id)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_created_at ON lead_events(created_at DESC)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_session_id ON lead_events(session_id)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_page ON lead_events(page)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_event_type ON lead_events(event_type)`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_section_id ON lead_events(section_id)`);
 }
 
 async function insertEvent(eventData) {
-  await run(
+  await query(
     `
     INSERT INTO lead_events (
       id, created_at, session_id, lead_id, event_type, page, section_id, section_label,
@@ -189,7 +154,13 @@ async function insertEvent(eventData) {
       clicked, cta_id, cta_label, referrer, url,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term,
       custom_1, custom_2, ip, user_agent
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8,
+      $9, $10, $11, $12, $13,
+      $14, $15, $16, $17, $18,
+      $19, $20, $21, $22, $23,
+      $24, $25, $26, $27
+    )
     `,
     [
       eventData.id,
@@ -224,28 +195,27 @@ async function insertEvent(eventData) {
 }
 
 async function readEvents({ days = 7, page = "" } = {}) {
-  let sql = `SELECT * FROM lead_events`;
   const params = [];
   const conditions = [];
 
   if (days && Number(days) > 0) {
-    const minDate = new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000).toISOString();
-    conditions.push(`created_at >= ?`);
-    params.push(minDate);
+    params.push(new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000).toISOString());
+    conditions.push(`created_at >= $${params.length}`);
   }
 
   if (page) {
-    conditions.push(`page = ?`);
     params.push(page);
+    conditions.push(`page = $${params.length}`);
   }
 
+  let sql = `SELECT * FROM lead_events`;
   if (conditions.length) {
     sql += ` WHERE ` + conditions.join(" AND ");
   }
-
   sql += ` ORDER BY created_at DESC`;
 
-  return all(sql, params);
+  const { rows } = await query(sql, params);
+  return rows;
 }
 
 /* =========================================================
@@ -257,9 +227,6 @@ function summarizeSessions(events) {
   for (const event of events) {
     const sessionId = event.session_id || "no-session";
     const page = event.page || "no-page";
-
-    // CORREÇÃO DO BUG:
-    // agrupa por session + page, e não só session
     const key = `${sessionId}__${page}`;
 
     if (!sessionsMap.has(key)) {
@@ -303,7 +270,7 @@ function summarizeSessions(events) {
       session.reached_price = true;
     }
 
-    if (event.event_type === "cta_click" || safeNumber(event.clicked, 0) === 1) {
+    if (event.event_type === "cta_click" || event.clicked === true) {
       session.clicked_cta = true;
       session.cta_clicks += 1;
     }
@@ -315,52 +282,8 @@ function summarizeSessions(events) {
   }));
 }
 
-function summarizeSections(events) {
-  const sections = {};
-
-  for (const event of events) {
-    if (!event.section_id) continue;
-
-    const key = `${event.page || "no-page"}__${event.section_id}`;
-
-    if (!sections[key]) {
-      sections[key] = {
-        page: event.page || "",
-        section_id: event.section_id,
-        section_label: event.section_label || event.section_id,
-        unique_sessions: new Set(),
-        views: 0,
-        total_time_in_section_ms: 0,
-        avg_time_in_section_ms: 0,
-      };
-    }
-
-    const row = sections[key];
-    row.views += 1;
-    row.total_time_in_section_ms += safeNumber(event.time_in_section_ms, 0);
-
-    if (event.session_id) {
-      row.unique_sessions.add(`${event.session_id}__${event.page || "no-page"}`);
-    }
-  }
-
-  return Object.values(sections)
-    .map((row) => ({
-      page: row.page,
-      section_id: row.section_id,
-      section_label: row.section_label,
-      views: row.views,
-      unique_sessions: row.unique_sessions.size,
-      total_time_in_section_ms: row.total_time_in_section_ms,
-      avg_time_in_section_ms:
-        row.views > 0 ? Math.round(row.total_time_in_section_ms / row.views) : 0,
-    }))
-    .sort((a, b) => b.unique_sessions - a.unique_sessions);
-}
-
 function summarizeEvents(events) {
   const sessions = summarizeSessions(events);
-  const sections = summarizeSections(events);
 
   const totalSessions = sessions.length;
   const reachedPrice = sessions.filter((s) => s.reached_price).length;
@@ -393,32 +316,26 @@ function summarizeEvents(events) {
         reachedPrice > 0 ? Number(((clickedCta / reachedPrice) * 100).toFixed(2)) : 0,
     },
     event_counts: eventCounts,
-    sections,
     sessions: sessions.sort((a, b) => new Date(b.last_event_at) - new Date(a.last_event_at)),
   };
 }
 
 /* =========================================================
-   ROTAS DE VIEW
+   VIEWS
 ========================================================= */
 app.get("/", (req, res) => {
   const indexPath = path.join(ROOT_DIR, "index.html");
   const upsellPath = path.join(ROOT_DIR, "upsell.html");
 
-  if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
-  }
-
-  if (fs.existsSync(upsellPath)) {
-    return res.sendFile(upsellPath);
-  }
+  if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
+  if (fs.existsSync(upsellPath)) return res.sendFile(upsellPath);
 
   return res.send(`
     <html>
       <head><title>Tracking Heatmap</title></head>
       <body style="font-family: Arial; padding: 24px;">
         <h1>Servidor ativo</h1>
-        <p>O servidor está rodando, mas não achei um <strong>index.html</strong> nem <strong>upsell.html</strong> na raiz.</p>
+        <p>Não encontrei <strong>index.html</strong> nem <strong>upsell.html</strong> na raiz.</p>
       </body>
     </html>
   `);
@@ -435,7 +352,6 @@ app.get("/dashboard", (req, res) => {
       <head><title>Dashboard não encontrado</title></head>
       <body style="font-family: Arial; padding: 24px;">
         <h1>dashboard.html não encontrado</h1>
-        <p>O arquivo do dashboard não foi encontrado na raiz.</p>
       </body>
     </html>
   `);
@@ -546,7 +462,7 @@ app.get("/api/dashboard/raw-events", async (req, res) => {
 
 app.delete("/api/dashboard/clear", async (req, res) => {
   try {
-    await run(`DELETE FROM lead_events`);
+    await query(`DELETE FROM lead_events`);
 
     return res.json({
       ok: true,
@@ -565,13 +481,12 @@ app.delete("/api/dashboard/clear", async (req, res) => {
    START
 ========================================================= */
 async function start() {
-  await openDb();
   await initDb();
 
   app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-    console.log(`🗄️ Banco SQLite: ${DB_PATH}`);
+    console.log(`🟢 Supabase/Postgres conectado`);
   });
 }
 
