@@ -2,22 +2,25 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
-const { Pool } = require("pg");
+const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ROOT_DIR = __dirname;
 
-const SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_DB_URL) {
-  console.error("❌ SUPABASE_DB_URL não definida.");
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  console.error("❌ SUPABASE_URL e/ou SUPABASE_SERVICE_ROLE_KEY não definidas.");
   process.exit(1);
 }
 
-const pool = new Pool({
-  connectionString: SUPABASE_DB_URL,
-  ssl: { rejectUnauthorized: false },
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
 });
 
 app.use(express.json({ limit: "1mb" }));
@@ -101,121 +104,59 @@ function normalizeEvent(body, req) {
 /* =========================================================
    DATABASE
 ========================================================= */
-async function query(sql, params = []) {
-  return pool.query(sql, params);
-}
+async function testConnection() {
+  const { error } = await supabase
+    .from("lead_events")
+    .select("id", { head: true, count: "exact" });
 
-async function initDb() {
-  await query(`
-    CREATE TABLE IF NOT EXISTS lead_events (
-      id TEXT PRIMARY KEY,
-      created_at TIMESTAMPTZ NOT NULL,
-      session_id TEXT,
-      lead_id TEXT,
-      event_type TEXT,
-      page TEXT,
-      section_id TEXT,
-      section_label TEXT,
-      scroll_percent INTEGER DEFAULT 0,
-      time_on_page_ms INTEGER DEFAULT 0,
-      time_in_section_ms INTEGER DEFAULT 0,
-      viewport_w INTEGER DEFAULT 0,
-      viewport_h INTEGER DEFAULT 0,
-      clicked BOOLEAN DEFAULT FALSE,
-      cta_id TEXT,
-      cta_label TEXT,
-      referrer TEXT,
-      url TEXT,
-      utm_source TEXT,
-      utm_medium TEXT,
-      utm_campaign TEXT,
-      utm_content TEXT,
-      utm_term TEXT,
-      custom_1 TEXT,
-      custom_2 TEXT,
-      ip TEXT,
-      user_agent TEXT
-    )
-  `);
-
-  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_created_at ON lead_events(created_at DESC)`);
-  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_session_id ON lead_events(session_id)`);
-  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_page ON lead_events(page)`);
-  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_event_type ON lead_events(event_type)`);
-  await query(`CREATE INDEX IF NOT EXISTS idx_lead_events_section_id ON lead_events(section_id)`);
+  if (error) {
+    throw error;
+  }
 }
 
 async function insertEvent(eventData) {
-  await query(
-    `
-    INSERT INTO lead_events (
-      id, created_at, session_id, lead_id, event_type, page, section_id, section_label,
-      scroll_percent, time_on_page_ms, time_in_section_ms, viewport_w, viewport_h,
-      clicked, cta_id, cta_label, referrer, url,
-      utm_source, utm_medium, utm_campaign, utm_content, utm_term,
-      custom_1, custom_2, ip, user_agent
-    ) VALUES (
-      $1, $2, $3, $4, $5, $6, $7, $8,
-      $9, $10, $11, $12, $13,
-      $14, $15, $16, $17, $18,
-      $19, $20, $21, $22, $23,
-      $24, $25, $26, $27
-    )
-    `,
-    [
-      eventData.id,
-      eventData.created_at,
-      eventData.session_id,
-      eventData.lead_id,
-      eventData.event_type,
-      eventData.page,
-      eventData.section_id,
-      eventData.section_label,
-      eventData.scroll_percent,
-      eventData.time_on_page_ms,
-      eventData.time_in_section_ms,
-      eventData.viewport_w,
-      eventData.viewport_h,
-      eventData.clicked,
-      eventData.cta_id,
-      eventData.cta_label,
-      eventData.referrer,
-      eventData.url,
-      eventData.utm_source,
-      eventData.utm_medium,
-      eventData.utm_campaign,
-      eventData.utm_content,
-      eventData.utm_term,
-      eventData.custom_1,
-      eventData.custom_2,
-      eventData.ip,
-      eventData.user_agent,
-    ]
-  );
+  const { error } = await supabase
+    .from("lead_events")
+    .insert(eventData);
+
+  if (error) {
+    throw error;
+  }
 }
 
 async function readEvents({ days = 7, page = "" } = {}) {
-  const params = [];
-  const conditions = [];
+  const minDate = new Date(
+    Date.now() - Number(days || 7) * 24 * 60 * 60 * 1000
+  ).toISOString();
 
-  if (days && Number(days) > 0) {
-    params.push(new Date(Date.now() - Number(days) * 24 * 60 * 60 * 1000).toISOString());
-    conditions.push(`created_at >= $${params.length}`);
-  }
+  let query = supabase
+    .from("lead_events")
+    .select("*")
+    .gte("created_at", minDate)
+    .order("created_at", { ascending: false });
 
   if (page) {
-    params.push(page);
-    conditions.push(`page = $${params.length}`);
+    query = query.eq("page", page);
   }
 
-  let sql = `SELECT * FROM lead_events`;
-  if (conditions.length) {
-    sql += ` WHERE ` + conditions.join(" AND ");
-  }
-  sql += ` ORDER BY created_at DESC`;
+  const { data, error } = await query;
 
-  const { rows } = await query(sql, params);
-  return rows;
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+async function clearEvents() {
+  const { error } = await supabase
+    .from("lead_events")
+    .delete()
+    .not("id", "is", null);
+
+  if (error) {
+    throw error;
+  }
 }
 
 /* =========================================================
@@ -384,6 +325,7 @@ app.post("/api/track", async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: "Falha ao gravar evento",
+      details: error.message || String(error),
     });
   }
 });
@@ -409,6 +351,7 @@ app.get("/api/dashboard/summary", async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: "Falha ao montar resumo",
+      details: error.message || String(error),
     });
   }
 });
@@ -433,6 +376,7 @@ app.get("/api/dashboard/sessions", async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: "Falha ao listar sessões",
+      details: error.message || String(error),
     });
   }
 });
@@ -456,13 +400,14 @@ app.get("/api/dashboard/raw-events", async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: "Falha ao listar eventos brutos",
+      details: error.message || String(error),
     });
   }
 });
 
 app.delete("/api/dashboard/clear", async (req, res) => {
   try {
-    await query(`DELETE FROM lead_events`);
+    await clearEvents();
 
     return res.json({
       ok: true,
@@ -473,6 +418,7 @@ app.delete("/api/dashboard/clear", async (req, res) => {
     return res.status(500).json({
       ok: false,
       error: "Falha ao limpar eventos",
+      details: error.message || String(error),
     });
   }
 });
@@ -481,12 +427,12 @@ app.delete("/api/dashboard/clear", async (req, res) => {
    START
 ========================================================= */
 async function start() {
-  await initDb();
+  await testConnection();
 
   app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
-    console.log(`🟢 Supabase/Postgres conectado`);
+    console.log(`🟢 Supabase conectado via URL + service role`);
   });
 }
 
