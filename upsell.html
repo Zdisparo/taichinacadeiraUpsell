@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
-  <title>Upsell - Protocolo:Barriga Chapada 40+</title>
+  <title>Upsell - Barriga Negativa</title>
 
   <style>
     * {
@@ -502,6 +502,76 @@
       line-height: 1.7;
     }
 
+    .fade-section {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      will-change: opacity, transform;
+    }
+
+    .fade-section.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .continue-reading {
+      position: fixed;
+      right: 18px;
+      bottom: 24px;
+      z-index: 998;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(12, 12, 13, 0.92);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 999px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+      animation: continuePulse 1.8s ease-in-out infinite;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+
+    .continue-reading.hidden {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .continue-reading .arrow {
+      font-size: 20px;
+      line-height: 1;
+      animation: continueArrow 1.4s ease-in-out infinite;
+    }
+
+    @keyframes continuePulse {
+      0% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      }
+      50% {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 16px 34px rgba(0,0,0,0.28);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+      }
+    }
+
+    @keyframes continueArrow {
+      0%, 100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(4px);
+        opacity: 0.78;
+      }
+    }
+
     .red {
       color: var(--red);
       font-weight: 900;
@@ -614,6 +684,18 @@
       .offer-expire {
         font-size: 17px;
       }
+
+      .continue-reading {
+        right: 12px;
+        bottom: 18px;
+        padding: 10px 14px;
+        font-size: 14px;
+        gap: 8px;
+      }
+
+      .continue-reading .arrow {
+        font-size: 18px;
+      }
     }
 
     @media (max-width: 420px) {
@@ -664,15 +746,20 @@
       ⏰ ESTA PÁGINA EXPIRA EM: <span id="topTimer">10:00</span>
     </div>
 
+    <div class="continue-reading" id="continueReading">
+      <span>Continue lendo</span>
+      <span class="arrow">↓</span>
+    </div>
+
     <div class="top-space"></div>
     <div class="divider"></div>
 
     <div class="container">
-      <section class="step-bar" data-section="step_bar" data-label="Barra de passo">
+      <section class="step-bar fade-section" data-section="step_bar" data-label="Barra de passo">
         ⚠️ PASSO 1 de 2: NÃO FECHE NEM ATUALIZE ESTA PÁGINA...
       </section>
 
-      <section class="hero-alert" data-section="hero_section" data-label="Headline principal">
+      <section class="hero-alert fade-section" data-section="hero_section" data-label="Headline principal">
         <span class="icon">🚨</span>
         <h1>ATENÇÃO: SUA COMPRA DO TAI CHI NA CADEIRA AINDA NÃO ESTÁ COMPLETA...</h1>
         <p>
@@ -685,7 +772,7 @@
         </p>
       </section>
 
-      <section data-section="intro_section" data-label="Introdução e contexto">
+      <section class="fade-section" data-section="intro_section" data-label="Introdução e contexto">
         <p class="lead-text">
           <span class="highlight-yellow">O Tai Chi na Cadeira já vai começar a reorganizar seu corpo.</span>
           Ele ajuda na mobilidade, na disposição e no destravamento do organismo.
@@ -698,7 +785,7 @@
         </div>
       </section>
 
-      <section class="card card-outline-yellow center" data-section="problem_section" data-label="Dor principal da barriga">
+      <section class="card card-outline-yellow center fade-section" data-section="problem_section" data-label="Dor principal da barriga">
         <span class="icon-top">⚠️</span>
         <h2 class="section-title">A verdade é simples: a barriga costuma ser a parte mais difícil de mudar</h2>
         <div class="mini-divider"></div>
@@ -711,13 +798,13 @@
         </p>
       </section>
 
-      <section class="notice-box" data-section="risk_section" data-label="Risco de sair sem a oferta">
+      <section class="notice-box fade-section" data-section="risk_section" data-label="Risco de sair sem a oferta">
         Sair desta página agora pode fazer você perder a única oportunidade de adicionar ao seu plano
         o <strong>protocolo secreto focado na parte mais difícil do corpo masculino</strong>:
         a região abdominal.
       </section>
 
-      <section class="card" data-section="benefits_section" data-label="Benefícios principais">
+      <section class="card fade-section" data-section="benefits_section" data-label="Benefícios principais">
         <h3 class="list-title-red">🔥 O que esse protocolo ajuda a acelerar:</h3>
         <ul class="benefit-list">
           <li><strong>Menos inchaço e sensação de barriga pesada</strong></li>
@@ -740,8 +827,8 @@
         </div>
       </section>
 
-      <section class="offer-card" id="offerCard" data-section="offer_section" data-label="Oferta principal">
-        <div class="offer-title">Protocolo:Barriga Chapada 40+</div>
+      <section class="offer-card fade-section" id="offerCard" data-section="offer_section" data-label="Oferta principal">
+        <div class="offer-title">BARRIGA NEGATIVA</div>
         <div style="font-size: 24px; font-weight: 800; line-height: 1.45;">
           O <strong>protocolo complementar do Tai Chi</strong> criado para acelerar os resultados justamente na barriga,
           aliviar a sensação de peso e ajudar seu corpo a responder mais rápido.
@@ -761,7 +848,7 @@
           data-cta-id="upsell_main_cta"
           data-cta-label="Adicionar barriga negativa"
         >
-          SIM, QUERO ADICIONAR O PROTOCOLO: BARRIGA CHAPADA 40+ AO MEU PLANO →
+          SIM, QUERO ADICIONAR O BARRIGA NEGATIVA AO MEU PLANO →
         </a>
 
         <div class="cta-meta">
@@ -769,13 +856,13 @@
         </div>
       </section>
 
-      <section class="card-dark" data-section="objection_section" data-label="Quebra de objeção">
+      <section class="card-dark fade-section" data-section="objection_section" data-label="Quebra de objeção">
         <h2 class="dark-headline">“Mas o Tai Chi na Cadeira sozinho já não resolve?”</h2>
         <div class="mini-divider"></div>
         <p class="dark-copy">
           O Tai Chi na Cadeira é o <span class="yellow">método principal</span> da sua transformação.
           <br /><br />
-          Só que o <span class="green">Protocolo:Barriga Chapada 40+</span> entra como o complemento estratégico
+          Só que o <span class="green">Barriga Negativa</span> entra como o complemento estratégico
           para dar apoio justamente na região que costuma responder mais devagar.
           <br /><br />
           É isso que deixa sua estratégia mais forte, mais completa e mais inteligente desde o começo.
@@ -792,7 +879,7 @@
         </div>
       </section>
 
-      <section class="card center" data-section="final_push_section" data-label="Empurrão final">
+      <section class="card center fade-section" data-section="final_push_section" data-label="Empurrão final">
         <span class="icon-top">✅</span>
         <h2 class="section-title">Você já deu o primeiro passo. Agora complete sua estratégia.</h2>
         <div class="mini-divider"></div>
@@ -804,7 +891,7 @@
         </p>
       </section>
 
-      <div class="icon-row" data-section="trust_icons" data-label="Ícones de confiança">
+      <div class="icon-row fade-section" data-section="trust_icons" data-label="Ícones de confiança">
         <div class="icon-info">
           <span>🔒</span>
           Pagamento seguro
@@ -825,7 +912,7 @@
 
       <a
         href="pagina-obrigado.html"
-        class="decline-link"
+        class="decline-link fade-section"
         id="declineLink"
         data-cta-id="upsell_decline"
         data-cta-label="Recusar upsell"
@@ -834,8 +921,8 @@
       </a>
     </div>
 
-    <footer class="footer" data-section="footer_section" data-label="Rodapé">
-      <p><strong>Aviso:</strong> o Protocolo:Barriga Chapada 40+ é um complemento digital de apoio ao seu plano principal.</p>
+    <footer class="footer fade-section" data-section="footer_section" data-label="Rodapé">
+      <p><strong>Aviso:</strong> o Barriga Negativa é um complemento digital de apoio ao seu plano principal.</p>
       <p>Copyright 2026 © Todos os direitos reservados.</p>
       <p>Política de Privacidade • Termos de Uso • Aviso Legal</p>
     </footer>
@@ -920,6 +1007,51 @@
           clearInterval(interval);
         }
       }, 1000);
+    }
+
+    function setupFadeSections() {
+      const fadeItems = document.querySelectorAll(".fade-section");
+
+      const fadeObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+          } else if (entry.boundingClientRect.top > 0) {
+            entry.target.classList.remove("is-visible");
+          }
+        });
+      }, {
+        threshold: 0.14,
+        rootMargin: "0px 0px -8% 0px"
+      });
+
+      fadeItems.forEach((item) => fadeObserver.observe(item));
+    }
+
+    function setupContinueReadingIndicator() {
+      const indicator = document.getElementById("continueReading");
+      const priceBox = document.getElementById("priceBox");
+
+      if (!indicator || !priceBox) return;
+
+      const toggleIndicator = () => {
+        const rect = priceBox.getBoundingClientRect();
+        const reachedPrice = rect.top <= window.innerHeight * 0.82;
+        indicator.classList.toggle("hidden", reachedPrice);
+      };
+
+      const priceObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          indicator.classList.toggle("hidden", entry.isIntersecting);
+        });
+      }, {
+        threshold: 0.2
+      });
+
+      priceObserver.observe(priceBox);
+      window.addEventListener("scroll", toggleIndicator, { passive: true });
+      window.addEventListener("resize", toggleIndicator);
+      toggleIndicator();
     }
 
     /* =========================================================
@@ -1205,6 +1337,8 @@
       startCountdown(COUNTDOWN_MINUTES);
 
       persistUtms();
+      setupFadeSections();
+      setupContinueReadingIndicator();
 
       trackState.sessionId = getOrCreateSessionId();
       trackState.leadId = getParam("lead_id") || getStoredValue("lead_id") || "";
